@@ -25,14 +25,39 @@
 .post-enter {
     transform: translateX(-350px);
 }
+
 .post-enter-active {
     transform: translateX(0);
     transition: all 500ms ease-in;
 }
+
 .post-exit {
     opacity: 1;
 }
+
 .post-exit-active {
     transform: translateX(-350px);
     transition: all 500ms ease-in;
+}
+
+.page__wrapper {
+    margin-top: 30px;
+    display: flex;
+}
+
+.page {
+    padding: 10px;
+    border: 1px solid teal;
+    cursor: pointer;
+    margin-bottom: 30px;
+    transition: all 0.2s ease;
+}
+
+.page:hover {
+    background: #1cd5d5;
+    color: #7200c5;
+}
+
+.page__current {
+    border: 2px solid orange;
 }
