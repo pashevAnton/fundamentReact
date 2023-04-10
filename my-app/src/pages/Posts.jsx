@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import "../styles/App.css"
 import PostList from "../components/PostList";
 import PostForm from "../PostForm";
@@ -20,17 +20,29 @@ function Posts() {
     const [limit, setLimit] = useState(10)
     const [page, setPage] = useState(1)
     const sortedAndSearchedPosts = usePosts(posts, filter.sort, filter.query)
-
-
+    const lastElement = useRef()
+    const observer = useRef()
     const [fetchPosts, isPostLoading, postError] = useFetching(async () => {
         const response = await PostService.getAll(limit, page)
-        setPosts(response.data)
+        setPosts([...posts, ...response.data])
         const totalCount = response.headers['x-total-count']
         setTotalPages(getPageCount(totalCount, limit))
     })
 
     useEffect(() => {
-        fetchPosts()
+        if(isPostLoading) return;
+        if(observer.current) observer.current.disconnect();
+        const callback = function (entries, observer){
+            if(entries[0].isIntersecting && page < totalPages){
+                setPage(page + 1)
+            }
+        }
+        observer.current = new IntersectionObserver(callback);
+        observer.current.observe(lastElement.current)
+        },[isPostLoading])
+
+    useEffect(() => {
+        fetchPosts(limit, page)
     }, [page])
 
     const createPost = (newPost) => {
@@ -62,7 +74,7 @@ function Posts() {
             {postError && <h1>Произошла ошибка: ${postError}</h1>}
 
             <PostList remove={removePost} posts={sortedAndSearchedPosts} title="Посты про JS"/>
-
+            <div ref={lastElement} style={{height: 20}}/>
             {isPostLoading &&
                  <div style={{display: 'flex', justifyContent: 'center', marginTop: 50}}>
                     <Loader/>
