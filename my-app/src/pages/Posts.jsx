@@ -11,6 +11,7 @@ import Loader from "../components/UI/Loader/Loader";
 import {useFetching} from "../hooks/useFetching";
 import {getPageCount} from "../components/UI/utils/pages";
 import Pagination from "../components/UI/pagination/Pagination";
+import {useObserver} from "../hooks/useObserver";
 
 function Posts() {
     const [posts, setPosts] = useState([])
@@ -29,17 +30,9 @@ function Posts() {
         setTotalPages(getPageCount(totalCount, limit))
     })
 
-    useEffect(() => {
-        if(isPostLoading) return;
-        if(observer.current) observer.current.disconnect();
-        const callback = function (entries, observer){
-            if(entries[0].isIntersecting && page < totalPages){
-                setPage(page + 1)
-            }
-        }
-        observer.current = new IntersectionObserver(callback);
-        observer.current.observe(lastElement.current)
-        },[isPostLoading])
+    useObserver(lastElement, page < totalPages, isPostLoading, () => {
+        setPage(page + 1)
+    })
 
     useEffect(() => {
         fetchPosts(limit, page)
